@@ -27,35 +27,43 @@ class LLMService:
     def _build_analysis_prompt(self, query: str) -> str:
         """Build the prompt template for query analysis"""
         prompt = f"""
-Analyze the following product search query and extract structured information.
+Aşağıdaki ürün arama sorgusunu analiz et ve yapılandırılmış bilgileri çıkar.
 
 Input: "{query}"
 
-Instructions:
-- Detect user intent: identify product types, context tags, and gender preference ('male'|'female'|'unisex').
-- List the top 3-5 product types in order of relevance, e.g. ['suit','shirt','shoe','tie','watch'].
-- Produce an expanded, context-aware search phrase that includes those types and relevant descriptive terms.
-- If gender is not explicitly mentioned, infer from context or default to 'unisex'.
-- Product types should be single words (suit, shirt, shoe, etc.) not phrases.
+Talimatlar:
+- Sen, e-ticaret aramalarını analiz eden uzman bir yapay zekasın.
+- Kullanıcı niyetini tespit et: ürün türleri, bağlamsal etiketler ve cinsiyet tercihini ('erkek'|'kadın'|'unisex') belirle.
+- En alakalı 3–5 ürün türünü sırayla listele. İlk ürün türü, her zaman sorguda belirtilen ana ürün olmalıdır. Ürün türleri tek kelime olsun (ör. ceket, gömlek, ayakkabı).
+- Renk, malzeme (ör: pamuk, deri), stil (ör: V yaka, dar paça) gibi tüm ürün niteliklerini tespit et.
+- Genişletilmiş sorguyu (expanded_query) oluştururken, bunun bir ürün başlığı veya zengin bir ürün açıklaması gibi olmasını hedefle. Bu sorgu; tespit edilen cinsiyeti, ana ürün türünü, renk, malzeme gibi nitelikleri ve bağlamsal kelimeleri (ör: ofis, yazlık, spor, rahat) mutlaka içermelidir.
+- Eğer kullanıcı "hariç", "dışında", "olmayan" gibi negatif bir kısıtlama belirtirse, bu kısıtlamayı genişletilmiş sorguya dahil ETME, bunun yerine ilgili terimi ürün türlerinden ve genişletilmiş sorgudan çıkar.
+- Eğer cinsiyet açıkça belirtilmemişse, bağlamdan çıkar ya da varsayılan olarak 'unisex' ata.
+- Çıktıyı yalnızca JSON formatında, ekstra açıklama yada metin olmadan döndür.
 
 Output format (JSON only, no additional text):
 {{
-  "gender": "<male|female|unisex>",
-  "product_types": ["<type1>", "<type2>", "<type3>"],
-  "expanded_query": "<expanded natural-language string>"
+  "gender": "<erkek|kadın|unisex>",
+  "product_types": ["<tur1>", "<tur2>", "<tur3>"],
+  "expanded_query": "<genişletilmiş doğal dil ifadesi>"
 }}
 
 Examples:
-Query: "I need a black suit for office"
-Output: {{"gender": "unisex", "product_types": ["suit", "shirt", "tie"], "expanded_query": "black formal business suit office professional wear"}}
+Query: "Ofis için siyah takım elbise lazım"
+Output: { "gender": "unisex", "product_types": ["takım_elbise", "gömlek", "ayakkabı", "kravat"], "expanded_query": "unisex siyah resmi ofis takım elbise profesyonel iş giyim klasik kesim gömlek ve ayakkabı" }
 
-Query: "casual shirt for men"
-Output: {{"gender": "male", "product_types": ["shirt", "pants", "shoe"], "expanded_query": "casual men's shirt comfortable everyday wear"}}
+Query: "erkekler için günlük spor ayakkabı"
+Output: { "gender": "erkek", "product_types": ["ayakkabı", "çorap", "eşofman", "şort"], "expanded_query": "erkek günlük spor ayakkabı rahat konforlu yürüyüş ve koşu sneaker erkek spor çorap eşofman altı" }
 
-Query: "wedding dress for women"
-Output: {{"gender": "female", "product_types": ["dress", "shoe", "accessory"], "expanded_query": "wedding dress women formal elegant bridal wear"}}
+{ "gender": "kadın", "product_types": ["elbise", "ayakkabı", "çanta", "şal"], "expanded_query": "kadın düğün elbisesi abiye nişan söz mezuniyet için zarif şık gelinlik topuklu ayakkabı ve portföy çanta" }
 
-Now analyze: "{query}"
+Query: "Yaz tatili için hem rahat hem şık bir şeyler arıyorum, belki bir elbise ya da etek."
+Output: { "gender": "kadın", "product_types": ["elbise", "etek", "sandalet", "şapka", "tulum"], "expanded_query": "kadın yazlık tatil koleksiyonu rahat şık bohem plaj elbisesi etek sandalet hasır şapka keten tulum" }
+
+Query: "Deri olmayan siyah erkek ceketi"
+Output: { "gender": "erkek", "product_types": ["ceket", "mont", "trençkot", "gömlek"], "expanded_query": "siyah erkek ceket kumaş mevsimlik bomber kolej mont su geçirmez trençkot" }
+
+Şimdi aşağıdaki sorguyu analiz et:: "{query}"
 """
         return prompt
     
