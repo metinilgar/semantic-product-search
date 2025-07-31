@@ -60,12 +60,13 @@ class VectorService:
             logger.error(f"Error ensuring collection exists: {e}")
             raise
     
-    async def generate_embedding(self, text: str) -> List[float]:
+    async def generate_embedding(self, text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> List[float]:
         """
         Generate embedding for given text using Gemini
         
         Args:
             text: Input text to embed
+            task_type: Task type for embedding (RETRIEVAL_QUERY for search, RETRIEVAL_DOCUMENT for indexing)
             
         Returns:
             List of embedding values
@@ -74,13 +75,13 @@ class VectorService:
             ValueError: If embedding generation fails
         """
         try:
-            logger.debug(f"Generating embedding for text: {text[:100]}...")
+            logger.debug(f"Generating embedding for text with task_type {task_type}: {text[:100]}...")
             
             # Generate embedding using new Gemini API with config
             result = self.client.models.embed_content(
                 model=settings.gemini_embedding_model,
                 contents=text,
-                config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT", output_dimension=settings.qdrant_vector_size)
+                config=types.EmbedContentConfig(task_type=task_type, output_dimension=settings.qdrant_vector_size)
             )
             
             if not result or not hasattr(result, 'embeddings') or not result.embeddings:

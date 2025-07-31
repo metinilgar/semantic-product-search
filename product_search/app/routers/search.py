@@ -62,7 +62,7 @@ async def search_products(request: SearchRequest) -> SearchResponse:
         
         # Step 2: Generate embedding for expanded query
         logger.debug("Generating embedding for expanded query...")
-        query_vector = await vector_service.generate_embedding(analysis_result.expanded_query)
+        query_vector = await vector_service.generate_embedding(analysis_result.expanded_query, task_type="RETRIEVAL_QUERY")
         
         # Step 3: Search in Qdrant with filters
         logger.debug("Searching in vector database...")
