@@ -81,7 +81,7 @@ class VectorService:
             result = self.client.models.embed_content(
                 model=settings.gemini_embedding_model,
                 contents=text,
-                config=types.EmbedContentConfig(task_type=task_type, output_dimension=settings.qdrant_vector_size)
+                config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=settings.qdrant_vector_size)
             )
             
             if not result or not hasattr(result, 'embeddings') or not result.embeddings:
