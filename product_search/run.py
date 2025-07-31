@@ -14,7 +14,7 @@ def check_requirements():
         import fastapi
         import uvicorn
         import qdrant_client
-        import google.generativeai
+        import google.genai 
         print("✅ All required packages are installed")
         return True
     except ImportError as e:
