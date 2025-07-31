@@ -1,0 +1,18 @@
+qdrant:
+  url: "http://localhost:6333"
+  collection_name: "products"
+  vector_size: 1536
+  distance: "Cosine"
+
+gemini:
+  model_name: "models/gemini-2.5-flash-lite"
+  embedding_model: "gemini-embedding-001"
+  api_key_env: "GEMINI_API_KEY"
+  
+search:
+  max_results: 10
+  score_threshold: 0.7
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
