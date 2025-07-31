@@ -3,7 +3,8 @@ Vector Service for embedding generation and Qdrant operations
 """
 import logging
 from typing import List, Dict, Any, Optional
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, MatchAny
 from app.settings import settings
@@ -20,8 +21,8 @@ class VectorService:
         if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
-        # Configure Gemini
-        genai.configure(api_key=settings.gemini_api_key)
+        # Initialize Gemini client with new API
+        self.client = genai.Client(api_key=settings.gemini_api_key)
         
         # Initialize Qdrant client
         self.qdrant_client = QdrantClient(url=settings.qdrant_url)
@@ -75,17 +76,18 @@ class VectorService:
         try:
             logger.debug(f"Generating embedding for text: {text[:100]}...")
             
-            # Generate embedding using Gemini
-            result = genai.embed_content(
+            # Generate embedding using new Gemini API with config
+            result = self.client.models.embed_content(
                 model=settings.gemini_embedding_model,
-                content=text,
-                task_type="retrieval_document"
+                contents=text,
+                config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT", output_dimension=settings.qdrant_vector_size)
             )
             
-            if not result or 'embedding' not in result:
+            if not result or not hasattr(result, 'embeddings') or not result.embeddings:
                 raise ValueError("Failed to generate embedding")
             
-            embedding = result['embedding']
+            # Extract the embedding values using the new format
+            embedding = result.embeddings[0].values
             
             logger.debug(f"Generated embedding of size: {len(embedding)}")
             return embedding
