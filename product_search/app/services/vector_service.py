@@ -8,7 +8,7 @@ from google.genai import types
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, MatchAny
 from app.settings import settings
-from app.schemas import QdrantPoint, QdrantSearchResult
+from app.schemas import QdrantSearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class VectorService:
         try:
             info = self.qdrant_client.get_collection(self.collection_name)
             return {
-                "name": info.config.params.collection_name,
+                "name": self.collection_name,
                 "vectors_count": info.vectors_count,
                 "status": info.status
             }

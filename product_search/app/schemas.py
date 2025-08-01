@@ -1,7 +1,7 @@
 """
 Pydantic models for request and response schemas
 """
-from typing import List, Optional, Literal, Union
+from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -76,13 +76,6 @@ class ErrorResponse(BaseModel):
 
 
 # Qdrant specific models
-class QdrantPoint(BaseModel):
-    """Qdrant point structure"""
-    id: str
-    vector: List[float]
-    payload: dict
-
-
 class QdrantSearchResult(BaseModel):
     """Qdrant search result"""
     id: str
