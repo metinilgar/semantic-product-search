@@ -61,6 +61,10 @@ class LLMService:
             # Doğrudan parsed nesneyi al (artık Pydantic validation otomatik)
             result = response.parsed
             
+            # LLM "null" string değerini döndürebilir, bunu None'a çevirelim
+            if result.gender == "null":
+                result.gender = None
+            
             logger.info(f"Query analysis complete: gender={result.gender}, "
                        f"types={result.product_types}, expanded={result.expanded_query[:50]}...")
             
@@ -86,7 +90,7 @@ class LLMService:
         query_lower = query.lower()
         
         # Simple gender detection
-        gender = "unisex"
+        gender = None
         if any(word in query_lower for word in ["erkek", "adam", "bay", "men", "man", "male", "him", "his"]):
             gender = "male"
         elif any(word in query_lower for word in ["kadın", "bayan", "women", "woman", "female", "her", "hers"]):
