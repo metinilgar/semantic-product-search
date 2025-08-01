@@ -55,21 +55,6 @@ def check_qdrant():
         return False
 
 
-def run_tests():
-    """Run unit tests"""
-    print("🧪 Running tests...")
-    result = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], capture_output=True, text=True)
-    
-    if result.returncode == 0:
-        print("✅ All tests passed")
-        print(result.stdout)
-    else:
-        print("❌ Tests failed")
-        print(result.stderr)
-    
-    return result.returncode == 0
-
-
 def run_server(host="0.0.0.0", port=8000, reload=True):
     """Run the FastAPI server"""
     print(f"🚀 Starting ShopSearchAgent server on {host}:{port}")
@@ -113,7 +98,7 @@ def setup_environment():
 
 def main():
     parser = argparse.ArgumentParser(description="ShopSearchAgent Development Tools")
-    parser.add_argument("command", choices=["setup", "check", "test", "run"], 
+    parser.add_argument("command", choices=["setup", "check", "run"], 
                        help="Command to execute")
     parser.add_argument("--host", default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=8000, help="Server port")
@@ -136,10 +121,6 @@ def main():
             print("\\n✅ All checks passed! Ready to run.")
         else:
             print("\\n❌ Some checks failed. Please fix the issues above.")
-            sys.exit(1)
-    
-    elif args.command == "test":
-        if not run_tests():
             sys.exit(1)
     
     elif args.command == "run":

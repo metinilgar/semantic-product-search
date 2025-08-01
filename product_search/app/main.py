@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("ShopSearchAgent starting up...")
     
-    # Test services initialization
+    # Initialize services
     try:
         from app.services.vector_service import vector_service
         collection_info = await vector_service.get_collection_info()
