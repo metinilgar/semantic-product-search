@@ -255,7 +255,7 @@ class VectorService:
     async def search_products(
         self, 
         query_vector: List[float], 
-        gender: str, 
+        gender: Optional[str], 
         product_types: List[str],
         limit: int = None
     ) -> List[QdrantSearchResult]:
@@ -278,13 +278,14 @@ class VectorService:
             # Build filter conditions
             filter_conditions = []
             
-            # Gender filter
-            filter_conditions.append(
-                FieldCondition(
-                    key="gender",
-                    match=MatchValue(value=gender)
+            # Gender filter - only add if gender is not None/null
+            if gender is not None:
+                filter_conditions.append(
+                    FieldCondition(
+                        key="gender",
+                        match=MatchValue(value=gender)
+                    )
                 )
-            )
             
             # Product types filter (match any tag)
             if product_types:
