@@ -1,6 +1,8 @@
 from django.db import models
+import uuid
 
 class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, verbose_name="Kategori Adı")
     description = models.TextField(blank=True, verbose_name="Açıklama")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -19,6 +21,7 @@ class Product(models.Model):
         ('U', 'Unisex'),
     ]
     
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name="Ürün Adı")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Kategori")
     material_type = models.CharField(max_length=100, verbose_name="Malzeme Türü")
