@@ -106,6 +106,52 @@ Admin panelden yeni ürün eklendiğinde otomatik olarak şu endpoint'e POST ist
 - `0002_alter_category_id_alter_product_id.py`: UUID'ye geçiş
 - `0003_product_description_product_tags.py`: Description ve tags alanları
 
+## Arama Sistemi
+
+### Akıllı Ürün Arama
+
+Kullanıcılar doğal dilde arama yapabilir:
+
+- **Örnek aramalar:** "siyah dar pantolon istiyorum", "rahat erkek tişörtü", "yazlık kadın elbise"
+- **API Endpoint:** `http://127.0.0.1:8000/search`
+- **Format:**
+
+```json
+// İstek
+{"query": "siyah dar pantolon istiyorum"}
+
+// Yanıt
+{
+  "query": "siyah dar pantolon istiyorum",
+  "gender": "male",
+  "product_types": ["pantolon"],
+  "expanded_query": "siyah dar erkek pantolonu",
+  "results": [
+    {
+      "product_id": "UUID",
+      "title": "Ürün adı",
+      "price": 199.99,
+      "image_url": "URL",
+      "score": 0.95
+    }
+  ]
+}
+```
+
+### Özellikler
+
+- ✅ Doğal dil işleme
+- ✅ Cinsiyet ve ürün türü algılama
+- ✅ Eşleşme skoru
+- ✅ Akıllı sonuç sıralama
+- ✅ API yanıt detayları gösterimi
+
+### Sayfalar
+
+- **Ana sayfa:** Arama kutusu ile hızlı arama
+- **Arama sayfası:** `/search/` - Detaylı arama ve sonuçlar
+- **AJAX API:** `/api/search/` - Programatik erişim
+
 ## Port Konfigürasyonu
 
 Varsayılan port `eticaret/settings.py` dosyasında `DEVELOPMENT_PORT = 8001` olarak ayarlanmıştır. Bu portu değiştirmek isterseniz bu dosyayı düzenleyebilirsiniz.
