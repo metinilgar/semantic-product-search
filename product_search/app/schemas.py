@@ -11,7 +11,7 @@ class ProductIndexRequest(BaseModel):
     title: str = Field(..., description="Product title", min_length=1, max_length=200)
     description: str = Field(..., description="Product description", min_length=1, max_length=1000)
     category: str = Field(..., description="Product category", min_length=1, max_length=50)
-    gender: Literal["male", "female", "unisex"] = Field(..., description="Target gender")
+    gender: Literal["male", "female"] = Field(..., description="Target gender")
     tags: List[str] = Field(..., description="Product tags", min_length=1)
     price: float = Field(..., description="Product price", ge=0)
     image_url: str = Field(..., description="Product image URL")
@@ -33,6 +33,34 @@ class ProductIndexResponse(BaseModel):
     product_id: str = Field(..., description="Indexed product ID")
 
 
+class BatchIndexRequest(BaseModel):
+    """Request schema for POST /products/batch_index"""
+    products: List[ProductIndexRequest] = Field(..., description="List of products to index", min_length=1, max_length=100)
+    
+    @field_validator('products')
+    def validate_products(cls, v):
+        if not v:
+            raise ValueError('Products list cannot be empty')
+        if len(v) > 100:
+            raise ValueError('Cannot index more than 100 products at once')
+        return v
+
+
+class BatchIndexItem(BaseModel):
+    """Individual batch index result"""
+    product_id: str = Field(..., description="Product identifier")
+    status: str = Field(..., description="Index status: 'success' or 'failed'")
+    error: Optional[str] = Field(None, description="Error message if indexing failed")
+
+
+class BatchIndexResponse(BaseModel):
+    """Response schema for POST /products/batch_index"""
+    total_products: int = Field(..., description="Total number of products processed")
+    successful: int = Field(..., description="Number of successfully indexed products")
+    failed: int = Field(..., description="Number of failed products")
+    results: List[BatchIndexItem] = Field(..., description="Detailed results for each product")
+
+
 class SearchRequest(BaseModel):
     """Request schema for POST /search"""
     query: str = Field(..., description="Natural language search query", min_length=1, max_length=500)
@@ -40,7 +68,7 @@ class SearchRequest(BaseModel):
 
 class LLMAnalysisResult(BaseModel):
     """Schema for LLM analysis result"""
-    gender: Literal["male", "female", "unisex"] = Field(..., description="Detected gender preference")
+    gender: Optional[Literal["male", "female"]] = Field(..., description="Detected gender preference or null for all genders")
     product_types: List[str] = Field(..., description="Top 3-5 relevant product types")
     expanded_query: str = Field(..., description="Expanded search query")
     
@@ -63,7 +91,7 @@ class SearchResultItem(BaseModel):
 class SearchResponse(BaseModel):
     """Response schema for POST /search"""
     query: str = Field(..., description="Original search query")
-    gender: Literal["male", "female", "unisex"] = Field(..., description="Detected gender")
+    gender: Optional[Literal["male", "female"]] = Field(..., description="Detected gender or null for all genders")
     product_types: List[str] = Field(..., description="Detected product types")
     expanded_query: str = Field(..., description="Expanded search query")
     results: List[SearchResultItem] = Field(..., description="Search results")

@@ -142,10 +142,120 @@ class VectorService:
             logger.error(f"Error indexing product {product_data.get('product_id', 'unknown')}: {e}")
             return False
     
+    async def batch_index_products(self, products_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Index multiple products in batch for better performance
+        
+        Args:
+            products_data: List of product information dictionaries
+            
+        Returns:
+            Dictionary with batch indexing results containing:
+            - successful_count: Number of successfully indexed products
+            - failed_count: Number of failed products
+            - results: List of individual results with status and error info
+        """
+        results = []
+        points = []
+        successful_count = 0
+        failed_count = 0
+        
+        try:
+            logger.info(f"Starting batch indexing for {len(products_data)} products")
+            
+            # Process each product and prepare points
+            for product_data in products_data:
+                product_id = product_data.get("product_id", "unknown")
+                
+                try:
+                    # Build text for embedding
+                    text_for_embedding = self._build_product_text(product_data)
+                    
+                    # Generate embedding
+                    vector = await self.generate_embedding(text_for_embedding)
+                    
+                    # Prepare point for Qdrant
+                    point = PointStruct(
+                        id=product_id,
+                        vector=vector,
+                        payload={
+                            "title": product_data["title"],
+                            "description": product_data["description"],
+                            "category": product_data["category"],
+                            "gender": product_data["gender"],
+                            "tags": product_data["tags"],
+                            "price": product_data["price"],
+                            "image_url": product_data["image_url"]
+                        }
+                    )
+                    
+                    points.append(point)
+                    results.append({
+                        "product_id": product_id,
+                        "status": "success",
+                        "error": None
+                    })
+                    successful_count += 1
+                    
+                except Exception as e:
+                    error_msg = f"Failed to prepare product for indexing: {str(e)}"
+                    logger.error(f"Error preparing product {product_id}: {e}")
+                    results.append({
+                        "product_id": product_id,
+                        "status": "failed",
+                        "error": error_msg
+                    })
+                    failed_count += 1
+            
+            # Batch upsert to Qdrant if we have any successful points
+            if points:
+                try:
+                    self.qdrant_client.upsert(
+                        collection_name=self.collection_name,
+                        points=points
+                    )
+                    logger.info(f"Batch upserted {len(points)} products successfully")
+                    
+                except Exception as e:
+                    # If batch upsert fails, mark all prepared products as failed
+                    logger.error(f"Batch upsert failed: {e}")
+                    for result in results:
+                        if result["status"] == "success":
+                            result["status"] = "failed"
+                            result["error"] = f"Batch upsert failed: {str(e)}"
+                            successful_count -= 1
+                            failed_count += 1
+            
+            logger.info(f"Batch indexing completed: {successful_count} successful, {failed_count} failed")
+            
+            return {
+                "successful_count": successful_count,
+                "failed_count": failed_count,
+                "results": results
+            }
+            
+        except Exception as e:
+            logger.error(f"Unexpected error in batch indexing: {e}")
+            # Mark all as failed if we have a general error
+            failed_results = []
+            for product_data in products_data:
+                product_id = product_data.get("product_id", "unknown")
+                failed_results.append({
+                    "product_id": product_id,
+                    "status": "failed",
+                    "error": f"Batch processing error: {str(e)}"
+                })
+            
+            return {
+                "successful_count": 0,
+                "failed_count": len(products_data),
+                "results": failed_results
+            }
+    
     async def search_products(
         self, 
         query_vector: List[float], 
-        gender: str, 
+        gender: Optional[str], 
         product_types: List[str],
         limit: int = None
     ) -> List[QdrantSearchResult]:
@@ -168,13 +278,14 @@ class VectorService:
             # Build filter conditions
             filter_conditions = []
             
-            # Gender filter
-            filter_conditions.append(
-                FieldCondition(
-                    key="gender",
-                    match=MatchValue(value=gender)
+            # Gender filter - only add if gender is not None/null
+            if gender is not None:
+                filter_conditions.append(
+                    FieldCondition(
+                        key="gender",
+                        match=MatchValue(value=gender)
+                    )
                 )
-            )
             
             # Product types filter (match any tag)
             if product_types:

@@ -3,7 +3,7 @@ Products router for product indexing endpoints
 """
 import logging
 from fastapi import APIRouter, HTTPException, status
-from app.schemas import ProductIndexRequest, ProductIndexResponse, ErrorResponse
+from app.schemas import ProductIndexRequest, ProductIndexResponse, BatchIndexRequest, BatchIndexResponse, BatchIndexItem, ErrorResponse
 from app.services.vector_service import vector_service
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,75 @@ async def index_product(request: ProductIndexRequest) -> ProductIndexResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during product indexing"
+        )
+
+
+@router.post(
+    "/batch_index",
+    response_model=BatchIndexResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Batch index products",
+    description="Index multiple products at once for improved performance"
+)
+async def batch_index_products(request: BatchIndexRequest) -> BatchIndexResponse:
+    """
+    Batch index multiple products for search
+    
+    This endpoint:
+    1. Processes multiple products simultaneously
+    2. Generates embeddings for each product using Gemini embedding model
+    3. Batch stores them in Qdrant vector database with metadata
+    4. Returns detailed results for each product
+    
+    Args:
+        request: Batch request containing list of products to index
+        
+    Returns:
+        BatchIndexResponse with detailed results for each product
+        
+    Raises:
+        HTTPException: If validation fails or processing encounters errors
+    """
+    try:
+        logger.info(f"Starting batch indexing for {len(request.products)} products")
+        
+        # Convert products to dictionaries
+        products_data = [product.model_dump() for product in request.products]
+        
+        # Batch index products using vector service
+        batch_result = await vector_service.batch_index_products(products_data)
+        
+        # Convert results to response format
+        batch_items = []
+        for result in batch_result["results"]:
+            batch_items.append(BatchIndexItem(
+                product_id=result["product_id"],
+                status=result["status"],
+                error=result["error"]
+            ))
+        
+        response = BatchIndexResponse(
+            total_products=len(request.products),
+            successful=batch_result["successful_count"],
+            failed=batch_result["failed_count"],
+            results=batch_items
+        )
+        
+        logger.info(f"Batch indexing completed: {response.successful} successful, {response.failed} failed")
+        
+        return response
+        
+    except ValueError as e:
+        logger.error(f"Validation error in batch indexing: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error in batch indexing: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during batch product indexing"
         )
 
 

@@ -11,7 +11,7 @@ gemini:
   
 search:
   max_results: 10
-  score_threshold: 0.7
+  score_threshold: 0.3
 
 logging:
   level: "INFO"
