@@ -59,10 +59,52 @@ Projede hem `Category` hem de `Product` modelleri UUID primary key kullanır:
 - Veritabanı kayıt aşamasında UUID atanır
 - Admin panelde UUID'ler readonly field olarak görüntülenir
 
+### Product Alanları
+
+- `name`: Ürün adı
+- `description`: Ürün açıklaması (TextField)
+- `category`: Kategori (ForeignKey)
+- `material_type`: Malzeme türü
+- `gender`: Cinsiyet (E/K/U)
+- `tags`: Etiketler (JSONField - otomatik oluşturulur)
+- `stock_quantity`: Stok miktarı
+- `size_info`: Beden bilgisi
+- `price`: Fiyat
+- `image`: Ürün resmi
+
+### Otomatik Tag Oluşturma
+
+- Tags alanı `description` metninden otomatik oluşturulur
+- 3+ karakter uzunluğunda anlamlı kelimeler seçilir
+- Yaygın Türkçe kelimeler (ve, ile, bir, etc.) filtrelenir
+- Maksimum 10 tag oluşturulur
+- Admin panelinde readonly olarak görüntülenir
+
+### API Entegrasyonu
+
+Admin panelden yeni ürün eklendiğinde otomatik olarak şu endpoint'e POST isteği gönderilir:
+
+- **Endpoint:** `http://127.0.0.1:8000/products/index`
+- **Format:**
+
+```json
+{
+  "product_id": "UUID string",
+  "title": "Ürün adı",
+  "description": "Ürün açıklaması",
+  "category": "Kategori adı",
+  "gender": "male/female/unisex",
+  "tags": ["etiket1", "etiket2"],
+  "price": 199.99,
+  "image_url": "http://127.0.0.1:8001/media/products/..."
+}
+```
+
 ### Migration Geçmişi
 
 - `0001_initial.py`: İlk model oluşturma (BigAutoField)
 - `0002_alter_category_id_alter_product_id.py`: UUID'ye geçiş
+- `0003_product_description_product_tags.py`: Description ve tags alanları
 
 ## Port Konfigürasyonu
 
