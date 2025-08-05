@@ -28,14 +28,43 @@ Modern e-ticaret uygulamaları için geliştirilmiş, yapay zeka destekli semant
 git clone <repository-url>
 cd product_search
 
-# API anahtarını ayarlayın
-echo "GEMINI_API_KEY=your_api_key_here" > .env
+# API anahtarını ayarlayın (.env dosyası oluşturun)
+echo "GEMINI_API_KEY=your_actual_gemini_api_key_here" > .env
+echo "LOG_LEVEL=INFO" >> .env
 
-# Servisleri başlatın
+# Servisleri başlatın (Qdrant + API)
 docker-compose up -d
 
-# Test edin
+# Servis durumunu kontrol edin
+docker-compose ps
+
+# API sağlığını test edin
 curl http://localhost:8000/health
+
+# Logları takip edin (isteğe bağlı)
+docker-compose logs -f product-search
+```
+
+#### Docker Servisleri
+- **product-search-app**: Ana API servisi (Port: 8000)
+- **product-search-qdrant**: Qdrant vektör veritabanı (Port: 6333, 6334)
+
+#### Docker Komutları
+```bash
+# Servisleri başlat
+docker-compose up -d
+
+# Servisleri durdur
+docker-compose down
+
+# Servisleri yeniden başlat
+docker-compose restart
+
+# Veri ile birlikte temizle
+docker-compose down -v
+
+# Logları görüntüle
+docker-compose logs -f [servis-adı]
 ```
 
 ### Manuel Kurulum
@@ -130,7 +159,7 @@ Servis çalıştıktan sonra detaylı dokümantasyon için:
 ### config.yaml
 ```yaml
 qdrant:
-  url: "http://localhost:6333"
+  url: "http://qdrant:6333"      # Docker container adı
   collection_name: "products"
   vector_size: 1536
   distance: "Cosine"
