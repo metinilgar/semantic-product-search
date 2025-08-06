@@ -58,7 +58,22 @@ echo "GEMINI_API_KEY=your_api_key_here" > .env
 docker-compose up -d
 ```
 
-### 2. Django Frontend'i Başlatın
+### 2. Örnek Ürün Verilerini Yükleyin (İsteğe Bağlı)
+
+Proje, hazır Qdrant snapshot dosyası ile birlikte gelir. Bu snapshot, SQLite veritabanındaki örnek ürünlerle senkronize edilmiş 50+ ürün içerir:
+
+**Qdrant Dashboard ile yükleme:**
+1. **Dashboard'a erişin**: http://localhost:6333/dashboard
+2. **Collections** sekmesine gidin
+3. **Eski collection'ı silin** (varsa): Mevcut collection'ın yanındaki **Delete** butonuna tıklayın
+4. **Upload Snapshot** butonuna tıklayın
+5. `products-8252181329589640-2025-08-06-11-21-58.snapshot` dosyasını seçin
+6. **Collection Name** alanına `products` yazın
+7. Yükleme tamamlandıktan sonra **products** collection'ını görebilirsiniz
+
+**Not**: `ecommerce/db.sqlite3` dosyasındaki ürünler ile Qdrant snapshot'ında bulunan ürünler tamamen senkronizedir.
+
+### 3. Django Frontend'i Başlatın
 
 ```bash
 cd ecommerce
@@ -66,7 +81,7 @@ pip install -r requirements.txt
 python run_server.py
 ```
 
-### 3. Uygulamayı Kullanın
+### 4. Uygulamayı Kullanın
 
 - **Frontend**: http://127.0.0.1:8001
 - **Admin Panel**: http://127.0.0.1:8001/admin (admin/admin123)
@@ -80,6 +95,7 @@ Her bileşen için ayrıntılı kurulum ve kullanım kılavuzları:
 ### [AI Arama Servisi - README](./product_search/README.md)
 - **Teknoloji**: FastAPI + Google Gemini AI + Qdrant
 - **Port**: 8000
+- **Snapshot**: `products-8252181329589640-2025-08-06-11-21-58.snapshot` (50+ örnek ürün)
 - **Özellikler**:
   - Doğal dil sorgu analizi
   - Semantik vektör arama
@@ -90,6 +106,7 @@ Her bileşen için ayrıntılı kurulum ve kullanım kılavuzları:
 ### [Django E-ticaret Frontend - README](./ecommerce/README.md)
 - **Teknoloji**: Django + Bootstrap + AJAX
 - **Port**: 8001
+- **Veritabanı**: `db.sqlite3` (Qdrant snapshot ile senkronize)
 - **Özellikler**:
   - Kullanıcı dostu arama arayüzü
   - Admin panel ürün yönetimi
