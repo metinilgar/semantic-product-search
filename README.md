@@ -3,6 +3,7 @@
 Kullanıcıların doğal dil sorguları aracılığıyla ilgili ürünleri bulmasını sağlayan LLM destekli bir semantik ürün arama sistemi. Bu proje, modern yapay zeka teknolojilerini kullanarak e-ticaret deneyimini geliştiren tam kapsamlı bir çözüm sunar.
 
 [Demo Videosu (YouTube)](https://youtu.be/_ad3iPhRNgg)
+![](https://github.com/user-attachments/assets/1674a8b6-08dd-4de3-ad49-0ca525996708)
 
 ## Proje Genel Bakış
 
