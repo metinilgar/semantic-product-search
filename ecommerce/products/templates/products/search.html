@@ -132,8 +132,11 @@
           {% if product.image %}
           <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
           {% else %}
-          <div class="card-img-top product-image bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-            <i class="fas fa-image fa-3x text-muted"></i>
+          <div class="card-img-top product-image product-image-placeholder" style="height: 300px;">
+            <div class="text-center">
+              <i class="fas fa-image fa-3x"></i>
+              <div class="product-image-placeholder-text">Resim Yok</div>
+            </div>
           </div>
           {% endif %}
 
@@ -308,8 +311,15 @@
   }
 
   .product-image {
-    height: 200px;
-    object-fit: cover;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 300px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px 8px 0 0;
+    display: block;
+    box-sizing: border-box;
+    background-color: #f8f9fa;
   }
 
   .badge {

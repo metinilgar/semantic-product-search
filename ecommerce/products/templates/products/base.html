@@ -16,14 +16,131 @@
       .product-card {
         transition: transform 0.3s ease;
         height: 100%;
+        overflow: hidden;
+      }
+      
+      .product-card .card-img-top {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0;
+        padding: 0;
+        flex-shrink: 0;
+      }
+      
+      /* Bootstrap column düzeltmeleri */
+      .row > [class*="col-"] {
+        padding-left: 7.5px;
+        padding-right: 7.5px;
+      }
+      
+      .container-fluid, .container {
+        padding-left: 15px;
+        padding-right: 15px;
       }
       .product-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
       .product-image {
-        height: 200px;
-        object-fit: cover;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 300px;
+        object-fit: contain;
+        object-position: center;
+        border-radius: 8px 8px 0 0;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        transition: transform 0.3s ease;
+        display: block;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box;
+        flex-shrink: 0;
+        border: 1px solid #e9ecef;
+      }
+      
+      /* Resim container'ı için iyileştirme */
+      .product-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px 8px 0 0;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      /* Resim container'ı için */
+      .product-image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px 8px 0 0;
+        background-color: #f8f9fa;
+      }
+      
+      .product-image-container .product-image {
+        border-radius: 0;
+      }
+      
+      /* Hover efekti */
+      .product-card:hover .product-image {
+        transform: scale(1.05);
+      }
+      
+      /* Placeholder stilleri */
+      .product-image-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #6c757d;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+      }
+      
+      .product-image-placeholder:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        border-color: #adb5bd;
+      }
+      
+      .product-image-placeholder i {
+        opacity: 0.7;
+        margin-bottom: 8px;
+      }
+      
+      .product-image-placeholder-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-align: center;
+        margin-top: 8px;
+      }
+      
+      /* Responsive resim boyutları */
+      @media (max-width: 576px) {
+        .product-image, .product-image-wrapper {
+          height: 200px;
+        }
+      }
+      
+      @media (min-width: 577px) and (max-width: 768px) {
+        .product-image, .product-image-wrapper {
+          height: 250px;
+        }
+      }
+      
+      @media (min-width: 769px) and (max-width: 992px) {
+        .product-image, .product-image-wrapper {
+          height: 280px;
+        }
+      }
+      
+      @media (min-width: 993px) {
+        .product-image, .product-image-wrapper {
+          height: 300px;
+        }
       }
       .navbar-brand {
         font-weight: bold;

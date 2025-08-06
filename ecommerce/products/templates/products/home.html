@@ -23,11 +23,11 @@ E-Ticaret{% endblock %} {% block content %}
             alt="{{ product.name }}"
           />
           {% else %}
-          <div
-            class="card-img-top product-image bg-light d-flex align-items-center justify-content-center"
-            style="height: 200px"
-          >
-            <i class="fas fa-image fa-2x text-muted"></i>
+          <div class="card-img-top product-image product-image-placeholder" style="height: 300px;">
+            <div class="text-center">
+              <i class="fas fa-image fa-2x"></i>
+              <div class="product-image-placeholder-text">Resim Yok</div>
+            </div>
           </div>
           {% endif %}
           <div class="card-body d-flex flex-column">
@@ -89,8 +89,15 @@ E-Ticaret{% endblock %} {% block content %}
   }
 
   .product-image {
-    object-fit: cover;
-    height: 200px;
+    width: 100% !important;
+    max-width: 100% !important;
+    object-fit: contain;
+    object-position: center;
+    height: 300px;
+    border-radius: 8px 8px 0 0;
+    display: block;
+    box-sizing: border-box;
+    background-color: #f8f9fa;
   }
 </style>
 {% endblock %}
