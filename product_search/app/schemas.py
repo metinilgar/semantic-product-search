@@ -1,0 +1,111 @@
+"""
+Pydantic models for request and response schemas
+"""
+from typing import List, Optional, Literal
+from pydantic import BaseModel, Field, field_validator
+
+
+class ProductIndexRequest(BaseModel):
+    """Request schema for POST /products/index"""
+    product_id: str = Field(..., description="Unique identifier for the product")
+    title: str = Field(..., description="Product title", min_length=1, max_length=200)
+    description: str = Field(..., description="Product description", min_length=1, max_length=1000)
+    category: str = Field(..., description="Product category", min_length=1, max_length=50)
+    gender: Literal["male", "female"] = Field(..., description="Target gender")
+    tags: List[str] = Field(..., description="Product tags", min_length=1)
+    price: float = Field(..., description="Product price", ge=0)
+    image_url: str = Field(..., description="Product image URL")
+    
+    @field_validator('tags')
+    def validate_tags(cls, v):
+        if not v:
+            raise ValueError('Tags list cannot be empty')
+        return [tag.strip().lower() for tag in v if tag.strip()]
+    
+    @field_validator('category')
+    def validate_category(cls, v):
+        return v.strip().lower()
+
+
+class ProductIndexResponse(BaseModel):
+    """Response schema for POST /products/index"""
+    status: str = Field(..., description="Operation status")
+    product_id: str = Field(..., description="Indexed product ID")
+
+
+class BatchIndexRequest(BaseModel):
+    """Request schema for POST /products/batch_index"""
+    products: List[ProductIndexRequest] = Field(..., description="List of products to index", min_length=1, max_length=100)
+    
+    @field_validator('products')
+    def validate_products(cls, v):
+        if not v:
+            raise ValueError('Products list cannot be empty')
+        if len(v) > 100:
+            raise ValueError('Cannot index more than 100 products at once')
+        return v
+
+
+class BatchIndexItem(BaseModel):
+    """Individual batch index result"""
+    product_id: str = Field(..., description="Product identifier")
+    status: str = Field(..., description="Index status: 'success' or 'failed'")
+    error: Optional[str] = Field(None, description="Error message if indexing failed")
+
+
+class BatchIndexResponse(BaseModel):
+    """Response schema for POST /products/batch_index"""
+    total_products: int = Field(..., description="Total number of products processed")
+    successful: int = Field(..., description="Number of successfully indexed products")
+    failed: int = Field(..., description="Number of failed products")
+    results: List[BatchIndexItem] = Field(..., description="Detailed results for each product")
+
+
+class SearchRequest(BaseModel):
+    """Request schema for POST /search"""
+    query: str = Field(..., description="Natural language search query", min_length=1, max_length=500)
+
+
+class LLMAnalysisResult(BaseModel):
+    """Schema for LLM analysis result"""
+    gender: Optional[Literal["male", "female"]] = Field(..., description="Detected gender preference or null for all genders")
+    product_types: List[str] = Field(..., description="Top 3-5 relevant product types")
+    expanded_query: str = Field(..., description="Expanded search query")
+    
+    @field_validator('product_types')
+    def validate_product_types(cls, v):
+        if not v:
+            raise ValueError('Product types list cannot be empty')
+        return [ptype.strip().lower() for ptype in v if ptype.strip()]
+
+
+class SearchResultItem(BaseModel):
+    """Individual search result item"""
+    product_id: str = Field(..., description="Product identifier")
+    title: str = Field(..., description="Product title")
+    price: float = Field(..., description="Product price")
+    image_url: str = Field(..., description="Product image URL")
+    score: float = Field(..., description="Relevance score")
+
+
+class SearchResponse(BaseModel):
+    """Response schema for POST /search"""
+    query: str = Field(..., description="Original search query")
+    gender: Optional[Literal["male", "female"]] = Field(..., description="Detected gender or null for all genders")
+    product_types: List[str] = Field(..., description="Detected product types")
+    expanded_query: str = Field(..., description="Expanded search query")
+    results: List[SearchResultItem] = Field(..., description="Search results")
+
+
+class ErrorResponse(BaseModel):
+    """Error response schema"""
+    error: str = Field(..., description="Error message")
+    detail: Optional[str] = Field(None, description="Additional error details")
+
+
+# Qdrant specific models
+class QdrantSearchResult(BaseModel):
+    """Qdrant search result"""
+    id: str
+    payload: dict
+    score: float
