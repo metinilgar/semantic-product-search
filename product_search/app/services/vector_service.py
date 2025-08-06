@@ -288,13 +288,13 @@ class VectorService:
                 )
             
             # Product types filter (match any tag)
-            if product_types:
-                filter_conditions.append(
-                    FieldCondition(
-                        key="tags",
-                        match=MatchAny(any=product_types)
-                    )
-                )
+            # if product_types:
+            #     filter_conditions.append(
+            #         FieldCondition(
+            #             key="tags",
+            #             match=MatchAny(any=product_types)
+            #         )
+            #     )
             
             # Build complete filter
             search_filter = Filter(must=filter_conditions) if filter_conditions else None
