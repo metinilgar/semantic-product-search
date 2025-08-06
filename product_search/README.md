@@ -1,17 +1,36 @@
-# 🛍️ Product Search - AI Destekli Ürün Arama Servisi
+# Product Search - AI Destekli Ürün Arama Servisi
 
-Modern e-ticaret uygulamaları için geliştirilmiş, yapay zeka destekli semantik ürün arama servisi. Kullanıcıların doğal dilde arama yapmalarını sağlar.
+Modern e-ticaret uygulamaları için geliştirilmiş, yapay zeka destekli semantik ürün arama servisi. Google Gemini AI ve Qdrant vektör veritabanı kullanarak kullanıcıların doğal dilde ürün arama yapmalarını sağlar.
 
-## ✨ Özellikler
+![](https://github.com/user-attachments/assets/1674a8b6-08dd-4de3-ad49-0ca525996708)
 
-- 🤖 **AI Destekli Arama**: Gemini AI ile doğal dil sorguları anlama
-- 🎯 **Akıllı Filtreleme**: Cinsiyet, kategori, ürün türü otomatik tespiti  
-- 🔍 **Semantik Arama**: Qdrant vektör veritabanı ile anlam tabanlı arama
-- ⚡ **FastAPI**: Yüksek performanslı async API
-- 🐳 **Docker Ready**: Tek komutla çalıştırma
-- 🔗 **Kolay Entegrasyon**: RESTful API ile herhangi bir frontend'e entegre
+## Nasıl Çalışır?
 
-## 🛠️ Teknoloji Stack
+### Ürün İndeksleme Süreci
+1. **Ürün Verisi**: API üzerinden ürün bilgileri (başlık, açıklama, kategori, cinsiyet, etiketler, fiyat) alınır
+2. **Embedding Üretimi**: Gemini embedding modeli ile 1536 boyutlu vektör üretilir
+3. **Vektör Saklama**: Qdrant veritabanında metadata ile birlikte saklanır
+
+### Arama Süreci
+1. **Sorgu Analizi**: Kullanıcının doğal dil sorgusu Gemini AI ile analiz edilir
+   - Cinsiyet tespiti (erkek/kadın)
+   - Ürün türleri belirleme
+   - Sorgu genişletme ve bağlamsal kelime ekleme
+2. **Vektör Arama**: Qdrant'ta cosine benzerlik ile filtrelenmiş arama
+3. **Sonuç Sıralama**: Benzerlik skoruna göre sıralı sonuçlar
+
+## Özellikler
+
+- **AI Destekli Arama**: Gemini 2.5 Flash Lite ile doğal dil sorguları anlama
+- **Akıllı Filtreleme**: Cinsiyet, kategori, ürün türü otomatik tespiti  
+- **Semantik Arama**: Qdrant vektör veritabanı ile anlam tabanlı arama
+- **Batch İşleme**: Toplu ürün indeksleme desteği (100 ürüne kadar)
+- **Fallback Sistemi**: AI başarısız olursa kural tabanlı analiz
+- **Health Monitoring**: Sistem durumu izleme ve diagnostik
+- **Yüksek Performans**: FastAPI ile async API
+- **RESTful API**: Swagger UI ile dokümantasyon
+
+## Teknoloji Stack
 
 - **Backend**: FastAPI + Python 3.11
 - **AI**: Google Gemini 2.5 Flash Lite
@@ -19,7 +38,7 @@ Modern e-ticaret uygulamaları için geliştirilmiş, yapay zeka destekli semant
 - **Embedding**: Gemini Embedding (1536 boyut)
 - **Deployment**: Docker + Docker Compose
 
-## 🚀 Hızlı Başlangıç
+## Kurulum
 
 ### Docker ile (Önerilen)
 
@@ -32,39 +51,11 @@ cd product_search
 echo "GEMINI_API_KEY=your_actual_gemini_api_key_here" > .env
 echo "LOG_LEVEL=INFO" >> .env
 
-# Servisleri başlatın (Qdrant + API)
+# Servisleri başlatın
 docker-compose up -d
-
-# Servis durumunu kontrol edin
-docker-compose ps
 
 # API sağlığını test edin
 curl http://localhost:8000/health
-
-# Logları takip edin (isteğe bağlı)
-docker-compose logs -f product-search
-```
-
-#### Docker Servisleri
-- **product-search-app**: Ana API servisi (Port: 8000)
-- **product-search-qdrant**: Qdrant vektör veritabanı (Port: 6333, 6334)
-
-#### Docker Komutları
-```bash
-# Servisleri başlat
-docker-compose up -d
-
-# Servisleri durdur
-docker-compose down
-
-# Servisleri yeniden başlat
-docker-compose restart
-
-# Veri ile birlikte temizle
-docker-compose down -v
-
-# Logları görüntüle
-docker-compose logs -f [servis-adı]
 ```
 
 ### Manuel Kurulum
@@ -88,15 +79,14 @@ echo "GEMINI_API_KEY=your_api_key_here" > .env
 uvicorn app.main:app --reload
 ```
 
-### API Anahtarı Alma
+### API Anahtarı
 
-1. [Google AI Studio](https://makersuite.google.com/app/apikey)'ya gidin
-2. "Create API Key" butonuna tıklayın
-3. API anahtarını `.env` dosyasına ekleyin
+[Google AI Studio](https://makersuite.google.com/app/apikey)'dan API anahtarı alın ve `.env` dosyasına ekleyin.
 
-## 📚 API Kullanımı
+## Ana Endpoint'ler
 
-### 🏷️ Ürün Ekleme - POST /products/index
+### Ürün İndeksleme - POST /products/index
+Tek ürün ekleme ve güncelleme:
 
 ```bash
 curl -X POST "http://localhost:8000/products/index" \
@@ -113,40 +103,62 @@ curl -X POST "http://localhost:8000/products/index" \
   }'
 ```
 
-### 🔍 Ürün Arama - POST /search
+### Doğal Dil Arama - POST /search
+AI destekli semantik arama:
 
 ```bash
-# Doğal dil ile arama
 curl -X POST "http://localhost:8000/search" \
   -H "Content-Type: application/json" \
   -d '{"query": "iş görüşmesi için şık takım elbise"}'
+```
 
-# Yanıt
+**Yanıt:**
+```json
 {
   "query": "iş görüşmesi için şık takım elbise",
   "gender": "male",
   "product_types": ["takım", "gömlek"],
+  "expanded_query": "resmi ofis takım elbise profesyonel iş giyim klasik",
   "results": [
     {
       "product_id": "suit_001",
       "title": "Siyah Takım Elbise",
       "price": 1299.99,
+      "image_url": "https://example.com/suit.jpg",
       "score": 0.92
     }
   ]
 }
 ```
 
-### 🧠 Sorgu Analizi - POST /search/analyze
+### Toplu Ürün İndeksleme - POST /products/batch_index
+100'e kadar ürünü aynı anda işleme:
 
 ```bash
-# Sadece AI analizi için
+curl -X POST "http://localhost:8000/products/batch_index" \
+  -H "Content-Type: application/json" \
+  -d '{"products": [...]}'
+```
+
+### Sorgu Analizi - POST /search/analyze
+Sadece AI analizi (arama yapmadan test için):
+
+```bash
 curl -X POST "http://localhost:8000/search/analyze" \
   -H "Content-Type: application/json" \
   -d '{"query": "düğün için kırmızı elbise"}'
 ```
 
-## 📖 API Dokümantasyonu
+**Yanıt:**
+```json
+{
+  "gender": "female",
+  "product_types": ["elbise", "ayakkabı", "çanta"],
+  "expanded_query": "düğün kırmızı elbise şık gece abiye"
+}
+```
+
+## API Dokümantasyonu
 
 Servis çalıştıktan sonra detaylı dokümantasyon için:
 
@@ -154,7 +166,7 @@ Servis çalıştıktan sonra detaylı dokümantasyon için:
 - **ReDoc**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
 
-## ⚙️ Yapılandırma
+## Yapılandırma
 
 ### config.yaml
 ```yaml
@@ -182,7 +194,7 @@ QDRANT_URL=http://localhost:6333  # isteğe bağlı
 LOG_LEVEL=INFO                    # isteğe bağlı
 ```
 
-## 🏗️ Proje Yapısı
+## Proje Yapısı
 
 ```
 product_search/
@@ -202,25 +214,32 @@ product_search/
 └── Dockerfile              # Container tanımı
 ```
 
-## 🐛 Sorun Giderme
+## Sistem Mimarisi
+
+### Servis Bileşenleri
+- **product-search-app**: Ana FastAPI servisi (Port: 8000)
+- **product-search-qdrant**: Qdrant vektör veritabanı (Port: 6333, 6334)
+
+### Veri Akışı
+1. **Ürün İndeksleme**: API → Embedding → Qdrant
+2. **Arama**: Query → AI Analizi → Embedding → Vektör Arama → Sonuçlar
+
+## Sorun Giderme
 
 ### Yaygın Sorunlar
 
 | Problem | Çözüm |
 |---------|-------|
-| Qdrant bağlantı hatası | `docker run -p 6333:6333 qdrant/qdrant` ile başlatın |
+| Qdrant bağlantı hatası | `docker-compose up qdrant` ile başlatın |
 | Gemini API hatası | `.env` dosyasında `GEMINI_API_KEY` kontrol edin |
-| Boş arama sonuçları | Önce ürün ekleyin, collection durumunu kontrol edin |
+| Boş arama sonuçları | Önce ürün ekleyin, `/products/collection/info` ile kontrol edin |
+| AI analizi başarısız | Fallback sistemi devreye girer, logları kontrol edin |
 
-### Test Etme
+### Test
+
 ```bash
 # Sistem sağlığı
 curl http://localhost:8000/health
-
-# Test ürünü ekleme
-curl -X POST http://localhost:8000/products/index \
-  -H "Content-Type: application/json" \
-  -d '{"product_id":"test","title":"Test Ürün","description":"Test açıklama","category":"test","gender":"male","tags":["test"],"price":100,"image_url":"http://test.com"}'
 
 # Test arama
 curl -X POST http://localhost:8000/search \
@@ -228,6 +247,6 @@ curl -X POST http://localhost:8000/search \
   -d '{"query":"test ürün"}'
 ```
 
-## 📝 Lisans
+## Lisans
 
 MIT Lisansı altında açık kaynak olarak sunulmaktadır.
